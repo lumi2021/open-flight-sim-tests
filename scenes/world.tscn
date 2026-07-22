@@ -1,0 +1,272 @@
+[gd_scene format=3 uid="uid://dbuhbuuypstbl"]
+
+[ext_resource type="Script" uid="uid://bybhbte78uel" path="res://scripts/WorldManager.gd" id="1_nnsk1"]
+[ext_resource type="Script" uid="uid://dytwnh7vk6pln" path="res://scripts/Player.gd" id="2_rwgxs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rwgxs"]
+albedo_color = Color(0.53333336, 0.6862745, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4wyf3"]
+material = SubResource("StandardMaterial3D_rwgxs")
+size = Vector3(1, 1, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k0juu"]
+material = SubResource("StandardMaterial3D_rwgxs")
+size = Vector3(5, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rwgxs"]
+material = SubResource("StandardMaterial3D_rwgxs")
+size = Vector3(0.2, 2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nnsk1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nnsk1"]
+sky_horizon_color = Color(0.7202324, 0.53632325, 0, 1)
+sky_curve = 0.117687635
+sky_energy_multiplier = 1.5
+ground_bottom_color = Color(0.02030316, 6.768387e-06, 0.13654616, 1)
+ground_horizon_color = Color(0.91985554, 0.6871768, 0, 1)
+ground_curve = 0.038637478
+ground_energy_multiplier = 0.5
+sun_angle_max = 0.0
+
+[sub_resource type="Sky" id="Sky_rwgxs"]
+sky_material = SubResource("ProceduralSkyMaterial_nnsk1")
+
+[sub_resource type="Environment" id="Environment_4wyf3"]
+background_mode = 2
+sky = SubResource("Sky_rwgxs")
+
+[sub_resource type="GDScript" id="GDScript_rwgxs"]
+script/source = "extends CanvasLayer
+
+@export var world : WorldManager
+@export var player : PlanetaryPlayer
+
+@onready var player_pos : Label = $Player/PlayerPos
+@onready var player_logial : Label = $Player/PlayerLogical
+@onready var player_coord : Label = $Player/PlayerCoord
+@onready var player_rot : Label = $Player/PlayerRot
+
+@onready var world_info : Label = $World/WorldInfo
+@onready var world_chunk : Label = $World/WorldChunk
+
+@onready var cam_1 : Camera3D = $Viewport/FarViewportContainer/FarViewport/Camera3D
+@onready var cam_2 : Camera3D = $Viewport/MidViewportContainer/MidViewport/Camera3D
+@onready var cam_3 : Camera3D = $Viewport/NearViewportContainer/NearViewport/Camera3D
+
+func _ready() -> void:
+	call_deferred(\"_initialize\")
+
+func _process(_delta: float) -> void:
+	if (player == null): return
+
+	cam_1.transform = player.camera_pos.global_transform
+	cam_2.transform = player.camera_pos.global_transform
+	cam_3.transform = player.camera_pos.global_transform
+	
+	player_pos.text = \"Player pos: %f, %f, %f\" % [
+		player.universal_position.x,
+		player.universal_position.y,
+		player.universal_position.z,
+	]
+	
+	player_logial.text = \"Player logical: %f, %f, %f\" % [
+		player.position.x,
+		player.position.y,
+		player.position.z,
+	]
+	
+	player_coord.text = \"Player gcs: %fº %fº\" % [
+		player.gcs_position.x,
+		player.gcs_position.y,
+	]
+	
+	player_coord.text = \"Player rot: %fº %fº %fº\" % [
+		player.rotation.x,
+		player.rotation.y,
+		player.rotation.z,
+	]
+	
+	world_info.text = \"WO: %f %f %f R: %f\" % [
+		world.planet_origin_offset.x,
+		world.planet_origin_offset.y,
+		world.planet_origin_offset.z,
+		world.planet_radius
+	]
+	
+	world_chunk.text = \"Chunk: %d° %d°\" % [
+		0, #world.current_simulation_chunk.x * world.chunk_size_m.x,
+		0, #world.current_simulation_chunk.y * world.chunk_size_m.y,
+	]
+	
+"
+
+[node name="Node3D" type="Node3D" unique_id=703072564]
+
+[node name="WorldManager" type="Node3D" parent="." unique_id=1123316299 node_paths=PackedStringArray("player")]
+script = ExtResource("1_nnsk1")
+player = NodePath("../Player")
+planet_radius = 5000.0
+view_distance_chunks = null
+chunk_resolution = null
+target_chunk_size_m = 32.0
+metadata/_custom_type_script = "uid://bybhbte78uel"
+
+[node name="Player" type="Node3D" parent="." unique_id=224520390 node_paths=PackedStringArray("world_manager", "camera_pos")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+script = ExtResource("2_rwgxs")
+world_manager = NodePath("../WorldManager")
+camera_pos = NodePath("Camera3D")
+metadata/_custom_type_script = "uid://dytwnh7vk6pln"
+
+[node name="Camera3D" type="Node3D" parent="Player" unique_id=602576301]
+transform = Transform3D(-1, 0, -8.742278e-08, -2.1757419e-08, 0.9685354, 0.24887586, 8.467205e-08, 0.24887586, -0.9685354, 0, 6, -10)
+
+[node name="Camera3D" type="Camera3D" parent="Player/Camera3D" unique_id=364818742]
+
+[node name="PlayerBody" type="Node3D" parent="Player" unique_id=208105029]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player/PlayerBody" unique_id=1316582666]
+mesh = SubResource("BoxMesh_4wyf3")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Player/PlayerBody" unique_id=1767266659]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4018526, 1.0146888)
+mesh = SubResource("BoxMesh_k0juu")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Player/PlayerBody" unique_id=1189317730]
+transform = Transform3D(1, 0, 0, 0, 0.78831154, 0.6152763, 0, -0.6152763, 0.78831154, 0, 0.50338745, -2.3310413)
+mesh = SubResource("BoxMesh_rwgxs")
+
+[node name="OriginReference" type="MeshInstance3D" parent="." unique_id=145552936]
+visible = false
+mesh = SubResource("BoxMesh_nnsk1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=178811003]
+environment = SubResource("Environment_4wyf3")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2113745955 node_paths=PackedStringArray("world", "player")]
+script = SubResource("GDScript_rwgxs")
+world = NodePath("../WorldManager")
+player = NodePath("../Player")
+
+[node name="Viewport" type="Control" parent="CanvasLayer" unique_id=1903958358]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FarViewportContainer" type="SubViewportContainer" parent="CanvasLayer/Viewport" unique_id=1475186147]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="FarViewport" type="SubViewport" parent="CanvasLayer/Viewport/FarViewportContainer" unique_id=1305106497]
+handle_input_locally = false
+size = Vector2i(1144, 648)
+render_target_update_mode = 0
+
+[node name="Camera3D" type="Camera3D" parent="CanvasLayer/Viewport/FarViewportContainer/FarViewport" unique_id=1170118827]
+current = true
+near = 80000.0
+far = 1600000.0
+
+[node name="MidViewportContainer" type="SubViewportContainer" parent="CanvasLayer/Viewport" unique_id=308572404]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="MidViewport" type="SubViewport" parent="CanvasLayer/Viewport/MidViewportContainer" unique_id=1121286716]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1144, 648)
+render_target_update_mode = 0
+
+[node name="Camera3D" type="Camera3D" parent="CanvasLayer/Viewport/MidViewportContainer/MidViewport" unique_id=1056789420]
+current = true
+near = 4000.0
+far = 80000.0
+
+[node name="NearViewportContainer" type="SubViewportContainer" parent="CanvasLayer/Viewport" unique_id=2133522415]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="NearViewport" type="SubViewport" parent="CanvasLayer/Viewport/NearViewportContainer" unique_id=2076380349]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1144, 648)
+render_target_update_mode = 0
+
+[node name="Camera3D" type="Camera3D" parent="CanvasLayer/Viewport/NearViewportContainer/NearViewport" unique_id=741277160]
+current = true
+far = 4100.0
+
+[node name="Player" type="Control" parent="CanvasLayer" unique_id=1643053241]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 192.0
+offset_bottom = 104.0
+
+[node name="PlayerPos" type="Label" parent="CanvasLayer/Player" unique_id=1195140179]
+layout_mode = 0
+offset_right = 131.0
+offset_bottom = 23.0
+text = "Player pos: x, y, z"
+
+[node name="PlayerLogical" type="Label" parent="CanvasLayer/Player" unique_id=952828228]
+layout_mode = 0
+offset_top = 24.0
+offset_right = 170.0
+offset_bottom = 47.0
+text = "Player logical: x, y, z"
+
+[node name="PlayerCoord" type="Label" parent="CanvasLayer/Player" unique_id=378388856]
+layout_mode = 0
+offset_top = 48.0
+offset_right = 170.0
+offset_bottom = 71.0
+text = "Player Coord: lat, long"
+
+[node name="PlayerRot" type="Label" parent="CanvasLayer/Player" unique_id=1827470673]
+layout_mode = 0
+offset_top = 72.0
+offset_right = 170.0
+offset_bottom = 95.0
+text = "Player rot: x y z"
+
+[node name="World" type="Control" parent="CanvasLayer" unique_id=1345415434]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 104.0
+offset_right = 192.0
+offset_bottom = 152.0
+
+[node name="WorldInfo" type="Label" parent="CanvasLayer/World" unique_id=1981051040]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "WO: x, y, z R: r"
+
+[node name="WorldChunk" type="Label" parent="CanvasLayer/World" unique_id=1866312481]
+layout_mode = 0
+offset_top = 24.0
+offset_right = 170.0
+offset_bottom = 47.0
+text = "Chunk: lat long"
